@@ -1,0 +1,6 @@
+torch>=2.1.0
+pytorch-lightning==2.4.0
+optuna==3.6.0
+pandas
+scikit-learn
+joblib
