@@ -39,7 +39,7 @@ jobs:
       - name: Create inference_code.tar.gz
         run: |
           mkdir -p inference_code
-          cp inference.py requirements.txt inference_code/
+          cp inference.py inference_requirements.txt inference_code/
           tar -czvf inference_code.tar.gz -C inference_code .
 
       - name: Upload train_code.tar.gz to S3
