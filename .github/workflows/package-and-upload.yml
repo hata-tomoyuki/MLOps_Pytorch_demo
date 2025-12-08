@@ -1,0 +1,53 @@
+name: Package and Upload Code to S3
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "train.py"
+      - "inference.py"
+      - "requirements.txt"
+      - ".github/workflows/package-and-upload.yml"
+
+jobs:
+  package-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - name: Set environment variables
+        run: |
+          echo "S3_BUCKET=${{ secrets.S3_BUCKET }}" >> $GITHUB_ENV
+          echo "S3_BASE_PREFIX=${{ secrets.S3_BASE_PREFIX }}" >> $GITHUB_ENV
+
+      - name: Create train_code.tar.gz
+        run: |
+          mkdir -p train_code
+          cp train.py requirements.txt train_code/
+          tar -czvf train_code.tar.gz -C train_code .
+
+      - name: Create inference_code.tar.gz
+        run: |
+          mkdir -p inference_code
+          cp inference.py requirements.txt inference_code/
+          tar -czvf inference_code.tar.gz -C inference_code .
+
+      - name: Upload train_code.tar.gz to S3
+        run: |
+          aws s3 cp train_code.tar.gz \
+            "s3://${S3_BUCKET}/${S3_BASE_PREFIX}/code/train/train_code.tar.gz"
+
+      - name: Upload inference_code.tar.gz to S3
+        run: |
+          aws s3 cp inference_code.tar.gz \
+            "s3://${S3_BUCKET}/${S3_BASE_PREFIX}/code/inference/inference_code.tar.gz"
