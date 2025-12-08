@@ -186,7 +186,7 @@ def main(args):
         "hidden_dim": hidden_dim,
     }
 
-    torch.save(ckpt, os.path.join(model_dir, "model.pt"))
+    torch.save(ckpt, os.path.join(model_dir, "model.bin"))
 
     # 前処理も保存
     joblib.dump(preprocess, os.path.join(model_dir, "preprocess.pkl"))

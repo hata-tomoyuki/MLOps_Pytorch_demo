@@ -84,7 +84,7 @@ def model_fn(model_dir: str):
     files = os.listdir(model_dir)
     print(f"[model_fn] files in model_dir: {files}")
 
-    model_path = os.path.join(model_dir, "model.pt")
+    model_path = os.path.join(model_dir, "model.bin")
     preprocess_path = os.path.join(model_dir, "preprocess.pkl")
 
     if not os.path.exists(model_path):
