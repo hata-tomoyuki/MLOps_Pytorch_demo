@@ -1,6 +1,7 @@
 import argparse
 import glob
 import os
+import shutil  # ★ 追加
 
 import joblib
 import numpy as np
@@ -186,12 +187,27 @@ def main(args):
         "hidden_dim": hidden_dim,
     }
 
+    # ① モデルを保存
     torch.save(ckpt, os.path.join(model_dir, "model.pt"))
 
-    # 前処理も保存
+    # ② 前処理も保存
     joblib.dump(preprocess, os.path.join(model_dir, "preprocess.pkl"))
 
-    print("Saved model.pt (with n_features, hidden_dim) and preprocess.pkl")
+    # ③ inference.py を code ディレクトリにコピー
+    code_dir = os.path.join(model_dir, "code")
+    os.makedirs(code_dir, exist_ok=True)
+
+    # train.py と同じディレクトリに inference.py がある前提
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    src_inference = os.path.join(current_dir, "inference.py")
+    dst_inference = os.path.join(code_dir, "inference.py")
+
+    if not os.path.exists(src_inference):
+        raise RuntimeError(f"inference.py not found at {src_inference}")
+
+    shutil.copyfile(src_inference, dst_inference)
+
+    print("Saved model.pt (with n_features, hidden_dim), preprocess.pkl and code/inference.py")
 
 
 if __name__ == "__main__":
