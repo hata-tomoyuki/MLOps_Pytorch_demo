@@ -1,7 +1,7 @@
 import argparse
 import glob
 import os
-import shutil  # ★ 追加
+import shutil  # 追加
 
 import joblib
 import numpy as np
@@ -193,21 +193,36 @@ def main(args):
     # ② 前処理も保存
     joblib.dump(preprocess, os.path.join(model_dir, "preprocess.pkl"))
 
-    # ③ inference.py を code ディレクトリにコピー
+    # ③ inference.py を探してあれば code/ にコピー
     code_dir = os.path.join(model_dir, "code")
     os.makedirs(code_dir, exist_ok=True)
 
-    # train.py と同じディレクトリに inference.py がある前提
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    src_inference = os.path.join(current_dir, "inference.py")
-    dst_inference = os.path.join(code_dir, "inference.py")
 
-    if not os.path.exists(src_inference):
-        raise RuntimeError(f"inference.py not found at {src_inference}")
+    candidate_paths = [
+        os.path.join(current_dir, "inference.py"),             # train.py と同じ階層
+        os.path.join(current_dir, "code", "inference.py"),     # ./code/inference.py
+        os.path.join(current_dir, "model", "code", "inference.py"),  # ./model/code/inference.py
+    ]
 
-    shutil.copyfile(src_inference, dst_inference)
+    src_inference = None
+    for p in candidate_paths:
+        if os.path.exists(p):
+            src_inference = p
+            break
 
-    print("Saved model.pt (with n_features, hidden_dim), preprocess.pkl and code/inference.py")
+    if src_inference is None:
+        print("[WARN] inference.py not found. Searched paths:")
+        for p in candidate_paths:
+            print(f"  - {p}")
+        print("[WARN] Skipping copy of inference.py. "
+              "If you want custom inference, include inference.py in source_dir.")
+    else:
+        dst_inference = os.path.join(code_dir, "inference.py")
+        shutil.copyfile(src_inference, dst_inference)
+        print(f"Copied inference.py from {src_inference} to {dst_inference}")
+
+    print("Saved model.pt (with n_features, hidden_dim), preprocess.pkl and maybe code/inference.py")
 
 
 if __name__ == "__main__":
