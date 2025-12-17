@@ -46,13 +46,8 @@ requirements.txt
 ```
 
 作成とアップロード：
+GitHub ActionsのワークフローでS3にアップロードされる
 
-```bash
-tar -czvf train_code.tar.gz train.py requirements.txt
-
-aws s3 cp train_code.tar.gz \
-  s3://sagemaker-ap-northeast-1-147367797159/sprint-weather/code/train/
-```
 
 ---
 
@@ -66,25 +61,13 @@ requirements.txt
 ```
 
 作成とアップロード：
-
-```bash
-tar -czvf inference_code.tar.gz inference.py requirements.txt
-
-aws s3 cp inference_code.tar.gz \
-  s3://sagemaker-ap-northeast-1-147367797159/sprint-weather/code/inference/
-```
+GitHub ActionsのワークフローでS3にアップロードされる
 
 ---
 
-# 🏋️ 2. 学習ジョブを実行（run_training.py）
+# 🏋️ 2. 学習ジョブを実行
 
-ローカルで以下を実行します：
-
-```bash
-python run_training.py
-```
-
-## ▼ run_training.py が実施すること
+S3 へ CSV アップロードをトリガーとして AWS Lambda の関数が以下を実行
 
 1. SageMaker トレーニングジョブを起動
 2. 入力データ `sprint-weather/train/` を読み込み
@@ -100,36 +83,14 @@ s3://sagemaker-ap-northeast-1-147367797159/sprint-weather/model/model.tar.gz
 
 ---
 
-# 🚀 3. 推論エンドポイントをデプロイ（deploy.py）
+# 🚀 3. 推論エンドポイントをデプロイ
 
-```bash
-python deploy.py
-```
-
-## ▼ deploy.py が実施すること
+AWS Lambda の関数が以下を実行
 
 1. S3 の最新モデル（`model/model.tar.gz`）をロード
 2. 推論コード（inference_code.tar.gz）をロード
 3. SageMaker エンドポイント `sprint-weather-endpoint` を新規作成
    ※既存の同名エンドポイントがある場合は **削除してから実行する必要があります**
-
----
-
-# 🧹 エンドポイント更新時の注意
-
-エンドポイント名を固定（推奨）する場合は、
-**再デプロイ前に必ず削除してください。**
-
-```bash
-aws sagemaker delete-endpoint \
-  --endpoint-name sprint-weather-endpoint
-```
-
-削除完了（Deleted）になったあとで：
-
-```bash
-python deploy.py
-```
 
 ---
 
